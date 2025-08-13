@@ -21,3 +21,13 @@ nav li{
     text-decoration: none;
     color: inherit;
 }
+
+a{
+    text-decoration: none;
+    color: #EEE;
+}
+
+a:hover{
+    color: lightseagreen;
+}
+
