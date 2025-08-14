@@ -1,37 +1,77 @@
 {% extends 'base.html.twig' %}
-{% block title %}Series{% endblock %}
+
+{% block title %}Catalogue des séries{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
 
 {% block body %}
-    <h2>Catalogue</h2>
+    <div class="container mt-5">
+        <h2 class="mb-4">Catalogue des séries</h2>
 
-    <table>
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+            <tr>
+                <th>Id</th>
+                <th>Titre</th>
+                <th>Status</th>
+                <th>Genre</th>
+                <th>Vote</th>
+                <th>Popularité</th>
+                <th>Première diffusion</th>
+                <th>Dernière diffusion</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for serie in series %}
+                <tr>
+                    <td>{{ serie.id }}</td>
+                    <td>{{ serie.name }}</td>
+                    <td>{{ serie.status }}</td>
+                    <td>{{ serie.genre }}</td>
+                    <td>{{ serie.vote }}</td>
+                    <td>{{ serie.popularity }}</td>
+                    <td>{{ serie.firstAirDate|date('d/m/Y') }}</td>
+                    <td>{{ serie.lastAirDate ? serie.lastAirDate|date('d/m/Y') : '' }}</td>
+                    <td>
+                        <a href="{{ path('_detail', {'id': serie.id}) }}" class="btn btn-info btn-sm">Détails</a>
+                        <a href="#" class="btn btn-warning btn-sm">Modifier</a>
+                        <a href="#" class="btn btn-danger btn-sm">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
-        <tr>
-            <th>Id</th>
-            <th>Titre</th>
-            <th>Status</th>
-            <th>Vote</th>
-            <th>Popularité</th>
-            <th>First Air Date</th>
-            <th>Lasst Air Date</th>
-            <th>Actions</th>
-        </tr>
-        {% for serie in series %}
-        <tr>
-            <td>{{ serie.id }}</td>
-            <td>{{ serie.name }}</td>
-            <td>{{ serie.status }}</td>
-            <td>{{ serie.vote }}</td>
-            <td>{{ serie.popularity }}</td>
-            <td>{{ serie.firstAirDate|date('d/m/Y') }}</td>
-            <td>{{ serie.lastAirDate ? serie.LastAireDate|date('d/m/Y') : '' }}</td>
-            <td>
-                <a href="{{ path('detail', {'id': serie.id}) }}">Détails</a>
-                <a href="{{ path('edit', {'id': serie.id}) }}">Modifier</a>
-                <a href="{{ path('delete', {'id': serie.id}) }}">Supprimer</a>
-        </tr>
-        {% endfor %}
-    </table>
+        {# Pagination simple #}
+        <nav aria-label="Navigation des pages">
+            <ul class="pagination justify-content-center">
+                {% if currentPage > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ path('_list', {'page': currentPage - 1}) }}">◀️ Page précédente</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">◀️ Page précédente</span>
+                    </li>
+                {% endif %}
 
+                <li class="page-item active">
+                    <span class="page-link">Page {{ currentPage }} sur {{ totalPages }}</span>
+                </li>
 
+                {% if currentPage < totalPages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ path('_list', {'page': currentPage + 1}) }}">Page suivante ▶️</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Page suivante ▶️</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 {% endblock %}

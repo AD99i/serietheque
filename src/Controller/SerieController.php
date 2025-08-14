@@ -7,6 +7,7 @@ use App\Repository\SerieRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Entity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -32,19 +33,38 @@ final class SerieController extends AbstractController
           return new Response('Une série a été créée !');
       }
       */
-    #[Route('/serie/list', name: 'list')]
-    public function list(SerieRepository $serieRepository): Response
+    #[Route('/serie/list/{page}', name: '_list',
+        requirements: ['page' => '\d+'],
+        defaults: ['page' => 1],
+        methods: ['GET'],
+    )]
+    public function list(SerieRepository $serieRepository,int $page,ParameterBagInterface $parameterBag): Response
     {
+
+        $nbPerPage = $parameterBag->get('serie')['nb_max'];
+        $offset = ($page - 1) * $nbPerPage;
+        $criterias = []; // tableau qui permet de filtrer les séries si besoin à mettre dans findBy()
+        // on le met en parametre du count() pour avoir le nombre total de séries
+
         {
-            $series = $serieRepository->findAll();
-            //dd($series);
+            $series = $serieRepository->findBy(
+                [],             // Aucun critère : on prend toutes les séries
+                [],             // Aucun ordre spécifique
+                $nbPerPage,     // Limite : nombre de séries par page
+                $offset         // Décalage : pour paginer
+            );
+
+            $total = $serieRepository->count($criterias);
+            $totalPages = ceil($total/$nbPerPage);
+            $currentPage = $page;
 
             return $this->render('serie/list.html.twig', [
                 'series' => $series,
+                'currentPage' => $currentPage,
+                'totalPages' => $totalPages,
+                'nbPerPage' => $nbPerPage,
             ]);
-
         }
-
     }
 
     #[Route('/detail/{id}', name: '_detail')]
