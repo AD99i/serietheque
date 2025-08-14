@@ -47,6 +47,27 @@ class SerieRepository extends ServiceEntityRepository
             ->execute();
     }
 
+    public function findSeriesWithSQL(float $popularity, float $vote): array
+    {
+        $sql = <<<SQL
+SELECT * FROM serie s 
+         WHERE (s.popularity > :popularity OR s.first_air_date > :date) 
+           AND s.vote > :vote 
+         ORDER BY s.popularity DESC, s.first_air_date DESC
+        LIMIT 10 OFFSET 0
+SQL;
+
+
+        $conn = $this->getEntityManager()->getConnection();
+        return $conn->prepare($sql)
+            ->executeQuery([
+                'popularity' => $popularity,
+                'vote' => $vote,
+                'date' => (new \DateTime('-5 years'))->format('Y-m-d'),
+            ])
+            ->fetchAllAssociative();
+    }
+
 
     //    /**
     //     * @return Serie[] Returns an array of Serie objects
