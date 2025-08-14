@@ -16,6 +16,38 @@ class SerieRepository extends ServiceEntityRepository
         parent::__construct($registry, Serie::class);
     }
 
+
+
+    public function findSeriesCustom(float $popularity, float $vote):array{
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.popularity > :popularity OR s.firstAirDate > :date')
+            ->andWhere('s.vote < :vote')
+            ->orderBy('s.popularity', 'DESC')
+            ->addOrderBy('s.firstAirDate', 'DESC')
+            ->setParameter('popularity', $popularity)
+            ->setParameter('vote', $vote)
+            ->setParameter('date', new \DateTime('- 5 years'))
+            ->setFirstResult(0)
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findSeriesWithDQL(): array
+    {
+        $dql = "SELECT s FROM App\Entity\Serie s WHERE (s.popularity > :popularity OR s.firstAirDate > :date) AND s.vote > :vote 
+        ORDER BY s.firstAirDate DESC";
+
+        return $this->getEntityManager()->createQuery($dql)
+            ->setParameter(':popularity', 400)
+            ->setParameter(':vote', 8)
+            ->setParameter(':date', new \DateTime('-5 years'))
+            ->setFirstResult(0)
+            ->setMaxResults(10)
+            ->execute();
+    }
+
+
     //    /**
     //     * @return Serie[] Returns an array of Serie objects
     //     */

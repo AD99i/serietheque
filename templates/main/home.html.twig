@@ -1,7 +1,70 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ parent() }} - Accueil{% endblock %}
+{% block title %}Bienvenue sur Seriethèque{% endblock %}
 
 {% block body %}
-<h2>Bienvenue sur la Seriethèque</h2>
+    <style>
+        .hero {
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            color: white;
+            padding: 80px 0;
+            border-radius: 0 0 30px 30px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        .hero p {
+            font-size: 1.25rem;
+        }
+        .section {
+            padding: 60px 0;
+        }
+    </style>
+
+    <div class="hero">
+        <div class="container">
+            <h1>Bienvenue sur <span class="text-warning">Seriethèque</span></h1>
+            <p class="lead mt-3">Explorez, gérez et découvrez vos séries préférées dans une interface moderne et intuitive.</p>
+            <div class="mt-4">
+                <a href="{{ path('_list') }}" class="btn btn-light btn-lg me-2">
+                    <i class="bi bi-collection-play me-1"></i> Voir le catalogue
+                </a>
+                <a href="#" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-info-circle me-1"></i> À propos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="section bg-light">
+        <div class="container text-center text-primary">
+            <h2 class="mb-4">📺 Qu’est-ce que Seriethèque ?</h2>
+            <p class="lead">Seriethèque est une application Symfony conçue pour gérer un catalogue de séries. Elle vous permet de :</p>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4">
+                        <i class="bi bi-search display-4 text-primary mb-3"></i>
+                        <h5>Explorer</h5>
+                        <p>Parcourez toutes les séries enregistrées avec leurs détails.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4">
+                        <i class="bi bi-pencil-square display-4 text-success mb-3"></i>
+                        <h5>Modifier</h5>
+                        <p>Ajoutez ou mettez à jour les informations de vos séries favorites.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4">
+                        <i class="bi bi-trash display-4 text-danger mb-3"></i>
+                        <h5>Gérer</h5>
+                        <p>Supprimez les séries obsolètes ou non pertinentes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

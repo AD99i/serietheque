@@ -33,6 +33,22 @@ final class SerieController extends AbstractController
           return new Response('Une série a été créée !');
       }
       */
+
+    #[Route('/serie/list-custom',name:'custom_list',)]
+    public function listCustom(SerieRepository $serieRepository):Response{
+
+        $series = $serieRepository->findSeriesCustom(400,8);
+
+        return $this->render('serie/list.html.twig', [
+            'series' => $series,
+            'page' => 1,
+            'nbPerPage' => 10,
+            'currentPage' => 1,
+            'totalPages' => 1,
+            'vote' => 8,
+        ]);
+
+    }
     #[Route('/serie/list/{page}', name: '_list',
         requirements: ['page' => '\d+'],
         defaults: ['page' => 1],

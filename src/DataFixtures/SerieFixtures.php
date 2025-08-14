@@ -15,7 +15,7 @@ class SerieFixtures extends Fixture
 
         $faker = \Faker\Factory::create('fr_FR');
 
-        for ($i = 0; $i < 1000; $i++) {
+        for ($i = 0; $i < 25; $i++) {
             $serie = new Serie();
             $serie->setName($faker->realText(30,true))
                 ->setOverview($faker->paragraph(2))
