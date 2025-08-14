@@ -14,6 +14,7 @@
             <th>Popularité</th>
             <th>First Air Date</th>
             <th>Lasst Air Date</th>
+            <th>Actions</th>
         </tr>
         {% for serie in series %}
         <tr>
@@ -24,6 +25,10 @@
             <td>{{ serie.popularity }}</td>
             <td>{{ serie.firstAirDate|date('d/m/Y') }}</td>
             <td>{{ serie.lastAirDate ? serie.LastAireDate|date('d/m/Y') : '' }}</td>
+            <td>
+                <a href="{{ path('detail', {'id': serie.id}) }}">Détails</a>
+                <a href="{{ path('edit', {'id': serie.id}) }}">Modifier</a>
+                <a href="{{ path('delete', {'id': serie.id}) }}">Supprimer</a>
         </tr>
         {% endfor %}
     </table>

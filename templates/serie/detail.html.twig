@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+{% block title %}Details{% endblock %}
+
+{% block body %}
+    <h2>Détails </h2>
+
+    <table>
+
+        <tr>
+            <th>Id</th>
+            <th>Titre</th>
+            <th>Status</th>
+            <th>Vote</th>
+            <th>Popularité</th>
+            <th>First Air Date</th>
+            <th>Last Air Date</th>
+            <th>Actions</th>
+        </tr>
+
+            <tr>
+                <td>{{ serie.id }}</td>
+                <td>{{ serie.name }}</td>
+                <td>{{ serie.status }}</td>
+                <td>{{ serie.vote }}</td>
+                <td>{{ serie.popularity }}</td>
+                <td>{{ serie.firstAirDate|date('d/m/Y') }}</td>
+                <td>{{ serie.lastAirDate ? serie.LastAireDate|date('d/m/Y') : '' }}</td>
+                <td>
+                    <a href="{{ path('edit', {'id': serie.id}) }}">Modifier</a>
+                    <a href="{{ path('delete', {'id': serie.id}) }}">Supprimer</a>
+            </tr>
+
+    </table>
+
+
+{% endblock %}
