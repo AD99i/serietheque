@@ -100,7 +100,7 @@ final class SerieController extends AbstractController
 
 
         #[Route('/create', name: '_create')]
-        public function create(Request $request): Response
+        public function create(Request $request, EntityManagerInterface $em): Response
     {
 
         $serie = new Serie(); // Création d'une nouvelle instance de la série
@@ -110,7 +110,6 @@ final class SerieController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $serie = $form->getData(); // Récupération des données du formulaire
             //$serie->setDateCreated(new \DateTime()); // Définition de la date de création
-            $em = $this->getDoctrine()->getManager(); // Récupération du gestionnaire d'entité
             $em->persist($serie); // Préparation de l'entité pour l'insertion
             $em->flush(); // Envoi des données en base de données
 
