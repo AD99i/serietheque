@@ -85,14 +85,13 @@ final class SerieController extends AbstractController
         }
     }
 
-    #[Route('/detail/{id}', name: '_detail')]
-    public function detail(SerieRepository $serieRepository, int $id): Response
+    #[Route('/detail/{id}', name: 'serie_detail', requirements: ['id' => '\d+'])]
+    public function detail(Serie $serie): Response
     {
-        $serie = $serieRepository->find($id);
-
-        if (!$serie) {
-            throw $this->createNotFoundException('Série non trouvée');
-        }
+        // On utilise l'Entity Serie pour récupérer la série par son ID
+        // Symfony va automatiquement injecter l'instance de Serie si l'ID est valide
+        // Si l'ID n'existe pas, une exception NotFoundException sera levée automatiquement
+        //Erreur 404 si la série n'existe pas
 
         return $this->render('serie/detail.html.twig', [
             'serie' => $serie,
@@ -116,6 +115,28 @@ final class SerieController extends AbstractController
             $em->flush(); // Envoi des données en base de données
 
             $this->addFlash('success', 'Série créée avec succès !'); // Message flash de succès
+
+            return $this->redirectToRoute('serie_detail', ['id' => $serie->getId()]); // Redirection vers la liste des séries
+        }
+
+        return $this->render('serie/edit.html.twig',[
+            'serie_form' => $form]);
+    }
+
+    #[Route('/update/{id}', name: 'serie_update')]
+    public function update(Serie $serie, Request $request, EntityManagerInterface $em): Response
+    {
+
+
+
+        $form = $this->createForm(SerieType::class,$serie); // Création du formulaire pour la création d'une série
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() ) {
+            $em->flush(); // Envoi des données en base de données
+
+            $this->addFlash('success', 'Série mise à jour avec succès !'); // Message flash de succès
 
             return $this->redirectToRoute('serie_detail', ['id' => $serie->getId()]); // Redirection vers la liste des séries
         }
