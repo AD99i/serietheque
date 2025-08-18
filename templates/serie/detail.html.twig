@@ -7,41 +7,49 @@
 {% endblock %}
 
 {% block body %}
+    <style>
+        body {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.9)),
+            url('{{ asset('uploads/backdrops/' ~ serie.backdrop) }}');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+
     <div class="container mt-5">
-        <h2 class="mb-4">Détails de la série</h2>
+        <h2 class="mb-4 text-center text-light">🎬 Détails de la série</h2>
 
-        <table class="table table-bordered">
-            <thead class="table-light">
-            <tr>
-                <th>Id</th>
-                <th>Titre</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Vote</th>
-                <th>Popularité</th>
-                <th>Première diffusion</th>
-                <th>Dernière diffusion</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>{{ serie.id }}</td>
-                <td>{{ serie.name }}</td>
-                <td>{{ serie.overview }}</td>
-                <td>{{ serie.status }}</td>
-                <td>{{ serie.vote }}</td>
-                <td>{{ serie.popularity }}</td>
-                <td>{{ serie.firstAirDate|date('d/m/Y') }}</td>
-                <td>{{ serie.lastAirDate ? serie.lastAirDate|date('d/m/Y') : '' }}</td>
-                <td>
-                    <a href="#" class="btn btn-warning btn-sm">Modifier</a>
-                    <a href="#" class="btn btn-danger btn-sm">Supprimer</a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div class="card shadow-lg">
+            <div class="row g-0">
+                <div class="col-md-4">
+                    <img src="{{ asset('uploads/posters/series/' ~ serie.poster) }}" class="img-fluid rounded-start" alt="Poster de {{ serie.name }}">
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h3 class="card-title">{{ serie.name }}</h3>
+                        <p class="card-text"><strong>Description :</strong> {{ serie.overview }}</p>
+                        <p class="card-text"><strong>Status :</strong> {{ serie.status }}</p>
+                        <p class="card-text"><strong>Vote :</strong> ⭐ {{ serie.vote }}</p>
+                        <p class="card-text"><strong>Popularité :</strong> 🔥 {{ serie.popularity }}</p>
+                        <p class="card-text"><strong>Première diffusion :</strong> {{ serie.firstAirDate|date('d/m/Y') }}</p>
+                        {% if serie.lastAirDate %}
+                            <p class="card-text"><strong>Dernière diffusion :</strong> {{ serie.lastAirDate|date('d/m/Y') }}</p>
+                        {% endif %}
+                        <div class="mt-4">
+                            <a href="#" class="btn btn-warning me-2">Modifier</a>
+                            <a href="#" class="btn btn-danger">Supprimer</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <a href="{{ path('_list') }}" class="btn btn-secondary mt-3">Retour au catalogue</a>
+        <div class="text-center mt-4">
+            <a href="{{ path('_list') }}" class="btn btn-outline-light">⬅️ Retour au catalogue</a>
+        </div>
     </div>
 {% endblock %}
