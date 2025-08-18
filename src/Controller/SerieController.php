@@ -3,11 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\Serie;
+use App\Form\SerieType;
 use App\Repository\SerieRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Entity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -96,4 +98,29 @@ final class SerieController extends AbstractController
             'serie' => $serie,
         ]);
     }
+
+
+        #[Route('/create', name: '_create')]
+        public function create(Request $request): Response
+    {
+
+        $serie = new Serie(); // Création d'une nouvelle instance de la série
+        $form = $this->createForm(SerieType::class,$serie); // Création du formulaire pour la création d'une série
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $serie = $form->getData(); // Récupération des données du formulaire
+            $serie->setDateCreated(new \DateTime()); // Définition de la date de création
+            $em = $this->getDoctrine()->getManager(); // Récupération du gestionnaire d'entité
+            $em->persist($serie); // Préparation de l'entité pour l'insertion
+            $em->flush(); // Envoi des données en base de données
+
+            return $this->redirectToRoute('serie_detail', ['id' => $serie->getId()]); // Redirection vers la liste des séries
+        }
+
+        return $this->render('serie/edit.html.twig',[
+            'serie_form' => $form]);
+    }
+
+
 }
