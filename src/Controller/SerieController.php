@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
+#[Route('/serie')] // Route de base
 final class SerieController extends AbstractController
 {
     /*  #[Route('/serie', name: 'app_serie')]
@@ -36,7 +36,7 @@ final class SerieController extends AbstractController
       }
       */
 
-    #[Route('/serie/list-custom',name:'custom_list',)]
+    #[Route('/list-custom',name:'custom_list',)]
     public function listCustom(SerieRepository $serieRepository):Response{
 
         $series = $serieRepository->findSeriesCustom(400,8);
@@ -51,7 +51,7 @@ final class SerieController extends AbstractController
         ]);
 
     }
-    #[Route('/serie/list/{page}', name: '_list',
+    #[Route('/list/{page}', name: '_list',
         requirements: ['page' => '\d+'],
         defaults: ['page' => 1],
         methods: ['GET'],
@@ -110,10 +110,12 @@ final class SerieController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $serie = $form->getData(); // Récupération des données du formulaire
-            $serie->setDateCreated(new \DateTime()); // Définition de la date de création
+            //$serie->setDateCreated(new \DateTime()); // Définition de la date de création
             $em = $this->getDoctrine()->getManager(); // Récupération du gestionnaire d'entité
             $em->persist($serie); // Préparation de l'entité pour l'insertion
             $em->flush(); // Envoi des données en base de données
+
+            $this->addFlash('success', 'Série créée avec succès !'); // Message flash de succès
 
             return $this->redirectToRoute('serie_detail', ['id' => $serie->getId()]); // Redirection vers la liste des séries
         }
