@@ -5,9 +5,13 @@ namespace App\Entity;
 use App\Repository\SerieRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SerieRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[ORM\UniqueConstraint(columns: ['name', 'first_air_date'])]
+#[UniqueEntity(fields: ['name', 'firstAirDate'],message: 'Une série avec ce nom et cette date de première diffusion existe déjà')]
 class Serie
 {
     #[ORM\Id]
@@ -16,30 +20,50 @@ class Serie
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Ce champs est obligatoire')]
+    #[Assert\Length( min: 2,max: 15,minMessage: 'Au moins { limit } caractères !', maxMessage: 'Moins de { limit } caractères !')]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $overview = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: ['Returning','ended','canceled'],message: 'Ce choix n\'est pas valide')]
     private ?string $status = null;
 
     #[ORM\Column(nullable: true)]
     private ?float $vote = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 0, max: 10,notInRangeMessage: 'Les votes doivent être compris entre {{ min }} et {{ max }}')]
     private ?float $popularity = null;
 
     #[ORM\Column(length: 255)]
     private ?string $genre = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\LessThan('today',message: 'La date de lancement ne doit pas être postérieure à {{ compared_value }}')]
     private ?\DateTime $firstAirDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Assert\GreaterThan(propertyPath: 'firstAirDate')]
+    #[Assert\When(
+        expression: "this.getStatus() == 'ended' || this.getStatus() == 'canceled'",
+        constraints: [
+            new Assert\NotBlank(message: 'Vu le statut, il faut une date de fin'),
+            ]
+    )]
+    #[Assert\When(
+        expression: "this.getStatus() == 'eturning'",
+        constraints: [
+            new Assert\Blank(message: 'Vu le statut, il ne faut pas de date de fin'),
+            ]
+    )]
     private ?\DateTime $lastAirDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\GreaterThan(propertyPath: 'firstAirDate')]
     private ?string $backdrop = null;
 
     #[ORM\Column(length: 255, nullable: true)]

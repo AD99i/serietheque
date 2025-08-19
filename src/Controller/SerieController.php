@@ -125,14 +125,10 @@ final class SerieController extends AbstractController
     #[Route('/update/{id}', name: 'serie_update')]
     public function update(Serie $serie, Request $request, EntityManagerInterface $em): Response
     {
-
-
-
         $form = $this->createForm(SerieType::class,$serie); // Création du formulaire pour la création d'une série
-
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() ) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $em->flush(); // Envoi des données en base de données
 
             $this->addFlash('success', 'Série mise à jour avec succès !'); // Message flash de succès
@@ -163,6 +159,8 @@ final class SerieController extends AbstractController
         return $this->redirectToRoute('serie_list');
 
     }
+
+    
 
 
 }
