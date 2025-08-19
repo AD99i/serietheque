@@ -9,9 +9,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Entity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
+
 #[Route('/serie')] // Route de base
 final class SerieController extends AbstractController
 {
@@ -100,15 +103,24 @@ final class SerieController extends AbstractController
 
 
         #[Route('/create', name: '_create')]
-        public function create(Request $request, EntityManagerInterface $em): Response
+        public function create(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, ParameterBagInterface $parameterBag): Response
     {
 
         $serie = new Serie(); // Création d'une nouvelle instance de la série
         $form = $this->createForm(SerieType::class,$serie); // Création du formulaire pour la création d'une série
         $form->handleRequest($request);
 
+
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $serie = $form->getData(); // Récupération des données du formulaire
+
+            $file = $form->get('poster_file')->getData(); // Récupération du fichier de l'affiche
+            if($file instanceof UploadedFile){
+                $name = $slugger->slug( $serie->getName() . '-' . uniqid() . '.' . $file->guessExtension()); // Génération d'un nom de fichier unique
+                $dir =$parameterBag->get('serie')['poster_directory']; // Récupération du répertoire de destination depuis les paramètres)
+                $file->move($dir, $name); // Déplacement du fichier dans le dossier uploads/posters
+                $serie->setPoster($file); // Définition du nom de l'affiche
+            }
             //$serie->setDateCreated(new \DateTime()); // Définition de la date de création
             $em->persist($serie); // Préparation de l'entité pour l'insertion
             $em->flush(); // Envoi des données en base de données
@@ -123,12 +135,27 @@ final class SerieController extends AbstractController
     }
 
     #[Route('/update/{id}', name: 'serie_update')]
-    public function update(Serie $serie, Request $request, EntityManagerInterface $em): Response
+    public function update(Serie $serie, Request $request, EntityManagerInterface $em, SluggerInterface $slugger, ParameterBagInterface $bag): Response
     {
         $form = $this->createForm(SerieType::class,$serie); // Création du formulaire pour la création d'une série
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            $file = $form->get('poster_file')->getData(); // Récupération du fichier de l'affiche
+            if($file instanceof UploadedFile){
+                $name = $slugger->slug( $serie->getName() . '-' . uniqid() . '.' . $file->guessExtension()); // Génération d'un nom de fichier unique
+                $dir = $bag->get('serie')['poster_directory']; // Récupération du répertoire de destination depuis les paramètres
+                $file->move($dir, $name); // Déplacement du fichier dans le dossier uploads/posters
+
+                if($serie->getPoster() && file_exists($dir .'/'. $serie->getPoster())) {
+                    unlink($dir .'/'. $serie->getPoster());
+                }
+
+
+                $serie->setPoster($file); // Définition du nom de l'affiche
+            }
+
             $em->flush(); // Envoi des données en base de données
 
             $this->addFlash('success', 'Série mise à jour avec succès !'); // Message flash de succès
