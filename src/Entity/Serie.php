@@ -57,7 +57,7 @@ class Serie
             ]
     )]
     #[Assert\When(
-        expression: "this.getStatus() == 'eturning'",
+        expression: "this.getStatus() == 'returning'",
         constraints: [
             new Assert\Blank(message: 'Vu le statut, il ne faut pas de date de fin'),
             ]

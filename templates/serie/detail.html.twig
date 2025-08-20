@@ -22,6 +22,8 @@
         .card {
             background-color: rgba(255, 255, 255, 0.95);
         }
+
+
     </style>
 
     <div class="container mt-5">
@@ -74,7 +76,8 @@
                             <p class="text-muted">Aucune saison enregistrée pour cette série.</p>
                         {% endif %}
 
-                        <div class="mt-4">
+                        <div class="mt-4 action-buttons d-flex flex-wrap gap-2">
+                            <a href="{{ path('season_create', {serieId: serie.id}) }}" class="btn btn-success me-2">➕ Ajouter une saison</a>
                             <a href="{{ path('serie_update', {id: serie.id}) }}" class="btn btn-warning me-2">✏️ Modifier</a>
                             <form method="post" action="{{ path('serie_delete', {id: serie.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette série ?')">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ serie.id) }}">
