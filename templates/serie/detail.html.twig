@@ -6,6 +6,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 {% endblock %}
 
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+
 {% block body %}
     <style>
         body {
@@ -16,7 +20,7 @@
             color: white;
         }
         .card {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.95);
         }
     </style>
 
@@ -31,17 +35,51 @@
                 <div class="col-md-8">
                     <div class="card-body">
                         <h3 class="card-title">{{ serie.name }}</h3>
-                        <p class="card-text"><strong>Description :</strong> {{ serie.overview }}</p>
-                        <p class="card-text"><strong>Status :</strong> {{ serie.status }}</p>
-                        <p class="card-text"><strong>Vote :</strong> ⭐ {{ serie.vote }}</p>
-                        <p class="card-text"><strong>Popularité :</strong> 🔥 {{ serie.popularity }}</p>
-                        <p class="card-text"><strong>Première diffusion :</strong> {{ serie.firstAirDate|date('d/m/Y') }}</p>
+                        <p><strong>Description :</strong> {{ serie.overview }}</p>
+                        <p><strong>Status :</strong> {{ serie.status }}</p>
+                        <p><strong>Vote :</strong> ⭐ {{ serie.vote }}</p>
+                        <p><strong>Popularité :</strong> 🔥 {{ serie.popularity }}</p>
+                        <p><strong>Première diffusion :</strong> {{ serie.firstAirDate|date('d/m/Y') }}</p>
                         {% if serie.lastAirDate %}
-                            <p class="card-text"><strong>Dernière diffusion :</strong> {{ serie.lastAirDate|date('d/m/Y') }}</p>
+                            <p><strong>Dernière diffusion :</strong> {{ serie.lastAirDate|date('d/m/Y') }}</p>
                         {% endif %}
+
+                        {% if serie.seasons is not empty %}
+                            <div class="mt-4">
+                                <h5>Saisons :</h5>
+                                <div class="accordion" id="accordionSeasons">
+                                    {% for season in serie.seasons %}
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="heading{{ season.id }}">
+                                                <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#collapse{{ season.id }}"
+                                                        aria-expanded="false"
+                                                        aria-controls="collapse{{ season.id }}">
+                                                    Saison {{ season.number }} – {{ season.firstAirDate|date('d/m/Y') }}
+                                                </button>
+                                            </h2>
+                                            <div id="collapse{{ season.id }}"
+                                                 class="accordion-collapse collapse"
+                                                 aria-labelledby="heading{{ season.id }}">
+                                                <div class="accordion-body">
+                                                    {{ season.overview ?: 'Pas de description disponible.' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">Aucune saison enregistrée pour cette série.</p>
+                        {% endif %}
+
                         <div class="mt-4">
-                            <a href="{{ path('serie_update',{id:serie.id}) }}" class="btn btn-warning me-2">Modifier</a>
-                            <a href="{{ path('serie_delete') }}, {{ id: serie.id, token : csrf_token('delete'~serie.id) }}" class="btn btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer cette série ?')">Supprimer</a>
+                            <a href="{{ path('serie_update', {id: serie.id}) }}" class="btn btn-warning me-2">✏️ Modifier</a>
+                            <form method="post" action="{{ path('serie_delete', {id: serie.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette série ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ serie.id) }}">
+                                <button class="btn btn-danger">🗑️ Supprimer</button>
+                            </form>
                         </div>
                     </div>
                 </div>

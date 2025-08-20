@@ -68,13 +68,16 @@ final class SerieController extends AbstractController
         // on le met en parametre du count() pour avoir le nombre total de séries
 
         {
+        /*
             $series = $serieRepository->findBy(
                 [],             // Aucun critère : on prend toutes les séries
                 [],             // Aucun ordre spécifique
                 $nbPerPage,     // Limite : nombre de séries par page
                 $offset         // Décalage : pour paginer
             );
+*/
 
+        $series = $serieRepository->getSeriesWithSeasons($nbPerPage, $offset);
             $total = $serieRepository->count($criterias);
             $totalPages = ceil($total/$nbPerPage);
             $currentPage = $page;
@@ -87,6 +90,9 @@ final class SerieController extends AbstractController
             ]);
         }
     }
+
+
+
 
     #[Route('/detail/{id}', name: 'serie_detail', requirements: ['id' => '\d+'])]
     public function detail(Serie $serie): Response

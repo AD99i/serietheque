@@ -8,20 +8,32 @@
 
 {% block body %}
     <div class="container mt-5">
-        <h2 class="mb-4">Catalogue des séries</h2>
+        <h2 class="mb-4 text-center">📚 Catalogue des séries</h2>
 
-<section class="series-list">
-    {% for serie in series %}
-        <a href="{{ path('serie_detail', {id : serie.id}) }}">
-            <img src="{{ asset('uploads/posters/series/' ~ serie.poster) }}" width="250px" alt="{{ 'Poster de ' ~ serie.name }}" loading="lazy" >
-        </a>
-    {% else %}
-        <p>Aucune série trouvée.</p>
-    {% endfor %}
-</section>
+        {% if series is not empty %}
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                {% for serie in series %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <a href="{{ path('serie_detail', {id: serie.id}) }}">
+                                <img src="{{ asset('uploads/posters/series/' ~ serie.poster) }}" class="card-img-top" alt="Poster de {{ serie.name }}" loading="lazy">
+                            </a>
+                            <div class="card-body">
+                                <h4 class="card-title">{{ serie.name }}</h4>
+                                <p class="card-text">
+                                    <strong>Nombre de saisons :</strong> {{ serie.seasons|length }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-center">😢 Aucune série trouvée.</p>
+        {% endif %}
 
-        {# Pagination simple #}
-        <nav aria-label="Navigation des pages">
+        {# Pagination #}
+        <nav aria-label="Navigation des pages" class="mt-4">
             <ul class="pagination justify-content-center">
                 {% if currentPage > 1 %}
                     <li class="page-item">
