@@ -13,9 +13,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/serie')] // Route de base
+#[IsGranted('ROLE_USER')] // Vérifie que l'utilisateur a le rôle USER pour accéder à ces routes
 final class SerieController extends AbstractController
 {
     /*  #[Route('/serie', name: 'app_serie')]
@@ -59,6 +61,7 @@ final class SerieController extends AbstractController
         defaults: ['page' => 1],
         methods: ['GET'],
     )]
+    #[IsGranted('ROLE_USER')] // Vérifie que l'utilisateur a le rôle USER
     public function list(SerieRepository $serieRepository,int $page,ParameterBagInterface $parameterBag): Response
     {
 
@@ -109,6 +112,7 @@ final class SerieController extends AbstractController
 
 
         #[Route('/create', name: '_create')]
+        #[IsGranted('ROLE_ADMIN')] // Vérifie que l'utilisateur a le rôle ADMIN
         public function create(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, ParameterBagInterface $parameterBag): Response
     {
 
@@ -141,6 +145,7 @@ final class SerieController extends AbstractController
     }
 
     #[Route('/update/{id}', name: 'serie_update')]
+    #[IsGranted('ROLE_ADMIN')] // Vérifie que l'utilisateur a le rôle ADMIN
     public function update(Serie $serie, Request $request, EntityManagerInterface $em, SluggerInterface $slugger, ParameterBagInterface $bag): Response
     {
         $form = $this->createForm(SerieType::class,$serie); // Création du formulaire pour la création d'une série
@@ -174,6 +179,8 @@ final class SerieController extends AbstractController
     }
 
    #[Route('/delete/{id}', name: 'serie_delete', requirements: ['id' => '\d+'])]
+   #[IsGranted('ROLE_ADMIN')] // Vérifie que l'utilisateur a le rôle ADMIN
+
    public function delete (Serie $serie, EntityManagerInterface $em, Request $request):Response
     {
 

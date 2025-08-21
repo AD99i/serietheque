@@ -76,6 +76,7 @@
                             <p class="text-muted">Aucune saison enregistrée pour cette série.</p>
                         {% endif %}
 
+                        {% if is_granted('ROLE_ADMIN') %}
                         <div class="mt-4 action-buttons d-flex flex-wrap gap-2">
                             <a href="{{ path('season_create', {serieId: serie.id}) }}" class="btn btn-success me-2">➕ Ajouter une saison</a>
                             <a href="{{ path('serie_update', {id: serie.id}) }}" class="btn btn-warning me-2">✏️ Modifier</a>
@@ -84,6 +85,7 @@
                                 <button class="btn btn-danger">🗑️ Supprimer</button>
                             </form>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

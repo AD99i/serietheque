@@ -31,11 +31,26 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('home') }}">Accueil</a>
                     </li>
+                    {% if is_granted('IS_AUTHENTICATED') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('_list') }}">Catalogue</a>
                     </li>
+                    {% endif %}
+                    {% if is_granted('ROLE_ADMIN') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('_create') }}">Ajouter une série</a>
+                    </li>
+                    {% endif %}
+                    {% if is_granted('IS_AUTHENTICATED') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
+                    </li>
+                    {% endif %}
+
                 </ul>
             </div>
         </div>
