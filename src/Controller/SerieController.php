@@ -6,45 +6,23 @@ use App\Entity\Serie;
 use App\Form\SerieType;
 use App\Repository\SerieRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\Entity;
+use Helper\FileUploader;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\String\Slugger\SluggerInterface;
 
-#[Route('/serie')] // Route de base
-#[IsGranted('ROLE_USER')] // Vérifie que l'utilisateur a le rôle USER pour accéder à ces routes
+#[Route('/serie')]
+#[IsGranted('ROLE_USER')]
 final class SerieController extends AbstractController
 {
-    /*  #[Route('/serie', name: 'app_serie')]
-      public function index(EntityManagerInterface $em): Response
-      {
-
-          $serie = new Serie();
-          $serie->setName('One Piece')
-              ->setStatus('En cours')
-              ->setGenre('Anime')
-              ->setFirstAirDate(new \DateTime('1999-10-20'))
-              ->setDateCreated(new \DateTime());
-
-          $em->persist($serie);
-          $em->flush();
-
-
-
-
-          return new Response('Une série a été créée !');
-      }
-      */
-
-    #[Route('/list-custom',name:'custom_list',)]
-    public function listCustom(SerieRepository $serieRepository):Response{
-
-        $series = $serieRepository->findSeriesCustom(400,8);
+    #[Route('/list-custom', name: 'custom_list')]
+    public function listCustom(SerieRepository $serieRepository): Response
+    {
+        $series = $serieRepository->findSeriesCustom(400, 8);
 
         return $this->render('serie/list.html.twig', [
             'series' => $series,
@@ -54,153 +32,111 @@ final class SerieController extends AbstractController
             'totalPages' => 1,
             'vote' => 8,
         ]);
-
     }
-    #[Route('/list/{page}', name: '_list',
-        requirements: ['page' => '\d+'],
-        defaults: ['page' => 1],
-        methods: ['GET'],
-    )]
-    #[IsGranted('ROLE_USER')] // Vérifie que l'utilisateur a le rôle USER
-    public function list(SerieRepository $serieRepository,int $page,ParameterBagInterface $parameterBag): Response
-    {
 
+    #[Route('/list/{page}', name: 'serie_list', requirements: ['page' => '\d+'], defaults: ['page' => 1])]
+    public function list(SerieRepository $serieRepository, int $page, ParameterBagInterface $parameterBag): Response
+    {
         $nbPerPage = $parameterBag->get('serie')['nb_max'];
         $offset = ($page - 1) * $nbPerPage;
-        $criterias = []; // tableau qui permet de filtrer les séries si besoin à mettre dans findBy()
-        // on le met en parametre du count() pour avoir le nombre total de séries
-
-        {
-        /*
-            $series = $serieRepository->findBy(
-                [],             // Aucun critère : on prend toutes les séries
-                [],             // Aucun ordre spécifique
-                $nbPerPage,     // Limite : nombre de séries par page
-                $offset         // Décalage : pour paginer
-            );
-*/
 
         $series = $serieRepository->getSeriesWithSeasons($nbPerPage, $offset);
-            $total = $serieRepository->count($criterias);
-            $totalPages = ceil($total/$nbPerPage);
-            $currentPage = $page;
+        $total = $serieRepository->count([]);
+        $totalPages = ceil($total / $nbPerPage);
 
-            return $this->render('serie/list.html.twig', [
-                'series' => $series,
-                'currentPage' => $currentPage,
-                'totalPages' => $totalPages,
-                'nbPerPage' => $nbPerPage,
-            ]);
-        }
+        return $this->render('serie/list.html.twig', [
+            'series' => $series,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'nbPerPage' => $nbPerPage,
+        ]);
     }
-
-
-
 
     #[Route('/detail/{id}', name: 'serie_detail', requirements: ['id' => '\d+'])]
     public function detail(Serie $serie): Response
     {
-        // On utilise l'Entity Serie pour récupérer la série par son ID
-        // Symfony va automatiquement injecter l'instance de Serie si l'ID est valide
-        // Si l'ID n'existe pas, une exception NotFoundException sera levée automatiquement
-        //Erreur 404 si la série n'existe pas
-
         return $this->render('serie/detail.html.twig', [
             'serie' => $serie,
         ]);
     }
 
-
-        #[Route('/create', name: '_create')]
-        #[IsGranted('ROLE_ADMIN')] // Vérifie que l'utilisateur a le rôle ADMIN
-        public function create(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, ParameterBagInterface $parameterBag): Response
+    #[Route('/create', name: 'serie_create')]
+    #[IsGranted('ROLE_ADMIN')]
+    public function create(Request $request, FileUploader $fileUploader, EntityManagerInterface $em, ParameterBagInterface $parameterBag): Response
     {
-
-        $serie = new Serie(); // Création d'une nouvelle instance de la série
-        $form = $this->createForm(SerieType::class,$serie); // Création du formulaire pour la création d'une série
+        $serie = new Serie();
+        $form = $this->createForm(SerieType::class, $serie);
         $form->handleRequest($request);
 
-
-
         if ($form->isSubmitted() && $form->isValid()) {
-
-            $file = $form->get('poster_file')->getData(); // Récupération du fichier de l'affiche
-            if($file instanceof UploadedFile){
-                $name = $slugger->slug( $serie->getName() . '-' . uniqid() . '.' . $file->guessExtension()); // Génération d'un nom de fichier unique
-                $dir =$parameterBag->get('serie')['poster_directory']; // Récupération du répertoire de destination depuis les paramètres)
-                $file->move($dir, $name); // Déplacement du fichier dans le dossier uploads/posters
-                $serie->setPoster($file); // Définition du nom de l'affiche
+            $file = $form->get('poster_file')->getData();
+            if ($file instanceof UploadedFile) {
+                $dir = $parameterBag->get('serie')['poster_directory'];
+                $filename = $fileUploader->upload($file, $serie->getName(), $dir);
+                $serie->setPoster($filename);
             }
-            //$serie->setDateCreated(new \DateTime()); // Définition de la date de création
-            $em->persist($serie); // Préparation de l'entité pour l'insertion
-            $em->flush(); // Envoi des données en base de données
 
-            $this->addFlash('success', 'Série créée avec succès !'); // Message flash de succès
+            $serie->setDateCreated(new \DateTime());
+            $em->persist($serie);
+            $em->flush();
 
-            return $this->redirectToRoute('serie_detail', ['id' => $serie->getId()]); // Redirection vers la liste des séries
+            $this->addFlash('success', 'Série créée avec succès !');
+            return $this->redirectToRoute('serie_detail', ['id' => $serie->getId()]);
         }
 
-        return $this->render('serie/edit.html.twig',[
-            'serie_form' => $form]);
+        return $this->render('serie/edit.html.twig', [
+            'serie_form' => $form,
+        ]);
     }
 
     #[Route('/update/{id}', name: 'serie_update')]
-    #[IsGranted('ROLE_ADMIN')] // Vérifie que l'utilisateur a le rôle ADMIN
-    public function update(Serie $serie, Request $request, EntityManagerInterface $em, SluggerInterface $slugger, ParameterBagInterface $bag): Response
+    #[IsGranted('ROLE_ADMIN')]
+    public function update(Serie $serie, Request $request, FileUploader $fileUploader, EntityManagerInterface $em, ParameterBagInterface $parameterBag): Response
     {
-        $form = $this->createForm(SerieType::class,$serie); // Création du formulaire pour la création d'une série
+        $form = $this->createForm(SerieType::class, $serie);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('poster_file')->getData();
+            if ($file instanceof UploadedFile) {
+                $dir = $parameterBag->get('serie')['poster_directory'];
 
-            $file = $form->get('poster_file')->getData(); // Récupération du fichier de l'affiche
-            if($file instanceof UploadedFile){
-                $name = $slugger->slug( $serie->getName() . '-' . uniqid() . '.' . $file->guessExtension()); // Génération d'un nom de fichier unique
-                $dir = $bag->get('serie')['poster_directory']; // Récupération du répertoire de destination depuis les paramètres
-                $file->move($dir, $name); // Déplacement du fichier dans le dossier uploads/posters
-
-                if($serie->getPoster() && file_exists($dir .'/'. $serie->getPoster())) {
-                    unlink($dir .'/'. $serie->getPoster());
+                if ($serie->getPoster() && file_exists($dir . '/' . $serie->getPoster())) {
+                    unlink($dir . '/' . $serie->getPoster());
                 }
 
-
-                $serie->setPoster($file); // Définition du nom de l'affiche
+                $filename = $fileUploader->upload($file, $serie->getName(), $dir);
+                $serie->setPoster($filename);
             }
 
-            $em->flush(); // Envoi des données en base de données
-
-            $this->addFlash('success', 'Série mise à jour avec succès !'); // Message flash de succès
-
-            return $this->redirectToRoute('serie_detail', ['id' => $serie->getId()]); // Redirection vers la liste des séries
+            $em->flush();
+            $this->addFlash('success', 'Série mise à jour avec succès !');
+            return $this->redirectToRoute('serie_detail', ['id' => $serie->getId()]);
         }
 
-        return $this->render('serie/edit.html.twig',[
-            'serie_form' => $form]);
+        return $this->render('serie/edit.html.twig', [
+            'serie_form' => $form,
+        ]);
     }
 
-   #[Route('/delete/{id}', name: 'serie_delete', requirements: ['id' => '\d+'])]
-   #[IsGranted('ROLE_ADMIN')] // Vérifie que l'utilisateur a le rôle ADMIN
-
-   public function delete (Serie $serie, EntityManagerInterface $em, Request $request):Response
+    #[Route('/delete/{id}', name: 'serie_delete', requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function delete(Serie $serie, EntityManagerInterface $em, Request $request, ParameterBagInterface $parameterBag): Response
     {
+        if ($this->isCsrfTokenValid('delete' . $serie->getId(), $request->get('token'))) {
+            $dir = $parameterBag->get('serie')['poster_directory'];
+            if ($serie->getPoster() && file_exists($dir . '/' . $serie->getPoster())) {
+                unlink($dir . '/' . $serie->getPoster());
+            }
 
-        if($this->isCsrfTokenValid('delete'.$serie->getId(), $request->get('token'))){
             $em->remove($serie);
             $em->flush();
 
             $this->addFlash('success', 'La série a été supprimée avec succès');
-
-
-        }else{
-            $this->addFlash('danger', 'Suppresion Impossible');
+        } else {
+            $this->addFlash('danger', 'Suppression impossible');
         }
 
-
         return $this->redirectToRoute('serie_list');
-
     }
-
-    
-
-
 }
